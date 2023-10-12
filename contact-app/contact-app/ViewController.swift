@@ -23,7 +23,10 @@ class ViewController: UIViewController {
         contactTableView.dataSource = self
         createRightBarButton()
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchContact()
+    }
     //this below create add section on the right corner
     func createRightBarButton(){
         let barButton = UIBarButtonItem(title: "Add" , style: .plain, target: self, action:#selector(rightBarButtonTapped))
@@ -36,6 +39,11 @@ class ViewController: UIViewController {
     @IBAction func contactSegmentAction(_ sender: UISegmentedControl) {
     }
     
+    func fetchContact(){
+        let fetchRequest = Contact.fetchRequest()
+        contactList = try? (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext.fetch(fetchRequest)
+        contactTableView.reloadData()
+    }
 }
 extension ViewController: UITableViewDelegate,UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -43,9 +51,28 @@ extension ViewController: UITableViewDelegate,UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-     let cell = tableView.dequeueReusableCell(withIdentifier: "contactCell", for:indexPath)  //crate cell with identify and index path
-        return cell
+     let cell = tableView.dequeueReusableCell(withIdentifier: "contactCell",  for:indexPath) as? ContactTableViewCell
+        let contact = contactList?[indexPath.row]//contactList is array of contact line 44 from database from particular row[indexpath.row] means each row
+        cell?.nameLabel.text = contact?.name
+        cell?.contactData = contact//which cell
+        //crate cell with identify and index path
+        return cell!
     }
     
-    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath) as? ContactTableViewCell
+        performSegue(withIdentifier: "createNavConnect", sender: cell?.contactData)
+        //next screen send data to next screen
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        //prepae seque prepare data to next screen
+        let detailVC = segue.destination as? CreateContactViewController// crate viewContoller to next destination
+        if let contact = sender as? Contact{// check if sender have data or not
+            detailVC?.contactData = contact//if have data send data
+            detailVC?.isViewOnly = true
+            
+        }
+        
+            
+    }
 }
