@@ -37,12 +37,18 @@ class ViewController: UIViewController {
     }
 //connnect 3- control drag segment again
     @IBAction func contactSegmentAction(_ sender: UISegmentedControl) {
+            fetchContact()
     }
     
     func fetchContact(){
         let fetchRequest = Contact.fetchRequest()
         contactList = try? (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext.fetch(fetchRequest)
+        if contactSegment.selectedSegmentIndex == 1{
+            contactList = contactList?.filter({$0.isFavourite == true})
+        //if select 1 index which is favourite show only favourite if not one so it index 0 menas all show all data
+        }
         contactTableView.reloadData()
+        
     }
 }
 extension ViewController: UITableViewDelegate,UITableViewDataSource{

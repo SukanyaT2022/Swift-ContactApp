@@ -26,6 +26,8 @@ class CreateContactViewController : UIViewController{
     
     @IBOutlet weak var contactImageButton: UIButton!
     
+    @IBOutlet weak var deleteContactButton: UIButton!
+    
     var isViewOnly = false
     var contactData : Contact?
     var imagePath = "" //open camera from gallery
@@ -55,14 +57,37 @@ class CreateContactViewController : UIViewController{
         emailTextField.isUserInteractionEnabled = false
         phoneNumberTextField.isUserInteractionEnabled = false
         contactImageButton.isUserInteractionEnabled = false
-        saveButton.setTitle("Mark Favourite", for: .normal)
+        //below is remove favourite
+        let title = contactData?.isFavourite ?? false ? "Remove Favourite" : "Mark Favourite"
+        saveButton.setTitle(title, for: .normal)
+        deleteContactButton.isHidden = false
+        
         
     }
     
     //action below line
     
     @IBAction func SaveButtonAction(_ sender: Any) {
-        createNewContact()
+       
+        if isViewOnly {
+            contactData?.isFavourite = !(contactData?.isFavourite ?? false)// this for mark favourite or remove favourite --! not for reverse
+            //all contact not favourite
+            (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
+        }else{
+            createNewContact()
+        }
+        self.navigationController?.popViewController(animated: true)
+        //line 66 as ssoon as we click save it go back to first screen again
+    }
+    
+    
+    @IBAction func deleteButtonAction(_ sender: Any) {
+        if let contact = contactData{
+            (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext.delete(contact)
+            (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
+        }
+        self.navigationController?.popViewController(animated: true)
+        //once delete go back to first screen
     }
     
     @IBAction func contactImageButtonAction(_ sender: Any) {
